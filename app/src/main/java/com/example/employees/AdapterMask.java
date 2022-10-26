@@ -56,7 +56,7 @@ public class AdapterMask extends BaseAdapter {
         Mask mask = maskList.get(position);
         Product.setText(mask.getProduct());
         Quantity.setText(Integer.toString(mask.getQuantity()));
-        Cost.setText(Double.toString(mask.getCost()));
+        Cost.setText(Integer.toString(mask.getCost()));
         if (!mask.getImage().equals("null")) {
             Image.setImageBitmap(getUserImage(mask.getImage()));
         }

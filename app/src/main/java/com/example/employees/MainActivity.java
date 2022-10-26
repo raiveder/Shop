@@ -3,8 +3,10 @@ package com.example.employees;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
@@ -18,7 +20,14 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,18 +40,18 @@ public class MainActivity extends AppCompatActivity {
 
     static String id;
     Spinner spinner;
-    Connection connection;
-    Button btnAdd;
     EditText findByProduct;
     ListView listView;
+    List<Mask> lvProducts;
+    AdapterMask pAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
-        btnAdd = findViewById(R.id.btnAdd);
+        Button btnAdd = findViewById(R.id.btnAdd);
         btnAdd.setOnClickListener((view -> {
             Intent intent = new Intent(MainActivity.this, AddData.class);
             startActivity(intent);
@@ -78,11 +87,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         listView = findViewById(R.id.lvData);
+        lvProducts = new ArrayList<>();
+        pAdapter = new AdapterMask(MainActivity.this, lvProducts);
+        listView.setAdapter(pAdapter);
         listView.setOnItemClickListener((arg0, arg1, position, arg3) -> {
             try {
                 id = String.valueOf(arg3);
                 ConnectionHelper dbHelper = new ConnectionHelper();
-                connection = dbHelper.connectionClass();
+                Connection connection = dbHelper.connectionClass();
                 if (connection != null) {
                     Intent intent = new Intent(MainActivity.this, Change.class);
                     startActivity(intent);
@@ -95,8 +107,8 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
             }
         });
+        new GetProducts().execute();
 
-        getTextFromSQL("Select * FROM Shop");
     }
 
     private void sort(int position) {
@@ -105,28 +117,30 @@ public class MainActivity extends AppCompatActivity {
 
         switch (position) {
             case 0:
-                getTextFromSQL(query);
+                getData(query);
                 break;
 
             case 1:
-                getTextFromSQL(query + " ORDER BY Product ASC");
+                getData(query + " ORDER BY Product ASC");
                 break;
 
             case 2:
-                getTextFromSQL(query + " ORDER BY Quantity ASC");
+                getData(query + " ORDER BY Quantity ASC");
                 break;
 
             case 3:
-                getTextFromSQL(query + " ORDER BY Cost ASC");
+                getData(query + " ORDER BY Cost ASC");
                 break;
         }
+    }
+
+    public void getData(String query) {
+
     }
 
     public static String encodeImage(Bitmap bitmap) {
         int prevW = 500;
         int prevH = bitmap.getHeight() * prevW / bitmap.getWidth();
-        int a = bitmap.getHeight();
-        int c = bitmap.getWidth();
 
         Bitmap b = Bitmap.createScaledBitmap(bitmap, prevW, prevH, false);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -138,38 +152,49 @@ public class MainActivity extends AppCompatActivity {
         return "";
     }
 
-    public void getTextFromSQL(String query) {
-        List<Mask> data = new ArrayList<Mask>();
-        AdapterMask pAdapter = new AdapterMask(MainActivity.this, data);
-        try {
-            ConnectionHelper connectionHelper = new ConnectionHelper();
-            connection = connectionHelper.connectionClass();
-            if (connection != null) {
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(query);
-                while (resultSet.next()) {
-                    Mask tempMask = new Mask
-                            (Integer.parseInt(resultSet.getString("Id")),
-                                    resultSet.getString("Product"),
-                                    Integer.parseInt(resultSet.getString("Quantity")),
-                                    Double.parseDouble(resultSet.getString("Cost")),
-                                    resultSet.getString("Image")
-                            );
+    private class GetProducts extends AsyncTask<Void, Void, String> {
 
-                    data.add(tempMask);
+        @Override
+        protected String doInBackground(Void... voids) {
+            try {
+                URL url = new URL("https://ngknn.ru:5101/NGKNN/СергеевДЕ/api/Shops");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder result = new StringBuilder();
+                String line = "";
+
+                while ((line = reader.readLine()) != null) {
+                    result.append(line);
+                }
+                return result.toString();
+
+            } catch (Exception exception) {
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            try {
+                JSONArray tempArray = new JSONArray(s);
+                for (int i = 0; i < tempArray.length(); i++) {
+
+                    JSONObject productJson = tempArray.getJSONObject(i);
+                    Mask tempProduct = new Mask(
+                            productJson.getInt("Id"),
+                            productJson.getString("Product"),
+                            productJson.getInt("Quantity"),
+                            productJson.getInt("Cost"),
+                            productJson.getString("Image")
+                    );
+                    lvProducts.add(tempProduct);
                     pAdapter.notifyDataSetInvalidated();
                 }
-                connection.close();
-            } else {
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        enterMobile(pAdapter);
-    }
+            } catch (Exception ignored) {
 
-    public void enterMobile(AdapterMask pAdapter) {
-        pAdapter.notifyDataSetInvalidated();
-        listView.setAdapter(pAdapter);
+            }
+        }
     }
 }

@@ -8,14 +8,14 @@ public class Mask implements Parcelable {
     private int Id;
     private String Product;
     private int Quantity;
-    private double Cost;
+    private int Cost;
     private String Image;
 
     protected Mask(Parcel in) {
         Id = in.readInt();
         Product = in.readString();
         Quantity = in.readInt();
-        Cost = in.readDouble();
+        Cost = in.readInt();
         Image = in.readString();
     }
 
@@ -31,10 +31,6 @@ public class Mask implements Parcelable {
         }
     };
 
-    public int getId() {
-        return Id;
-    }
-
     public void setId(int Id) {
         this.Id = Id;
     }
@@ -47,12 +43,16 @@ public class Mask implements Parcelable {
         Quantity = quantity;
     }
 
-    public void setCost(double cost) {
+    public void setCost(int cost) {
         Cost = cost;
     }
 
     public void setImage(String image) {
         Image = image;
+    }
+
+    public int getId() {
+        return Id;
     }
 
     public String getProduct() {
@@ -63,7 +63,7 @@ public class Mask implements Parcelable {
         return Quantity;
     }
 
-    public double getCost() {
+    public int getCost() {
         return Cost;
     }
 
@@ -71,7 +71,7 @@ public class Mask implements Parcelable {
         return Image;
     }
 
-    public Mask(int Id, String product, int quantity, double cost, String image) {
+    public Mask(int Id, String product, int quantity, int cost, String image) {
         this.Id = Id;
         Product = product;
         Quantity = quantity;
@@ -89,7 +89,7 @@ public class Mask implements Parcelable {
         dest.writeInt(Id);
         dest.writeString(Product);
         dest.writeInt(Quantity);
-        dest.writeDouble(Cost);
+        dest.writeInt(Cost);
         dest.writeString(Image);
     }
 }
