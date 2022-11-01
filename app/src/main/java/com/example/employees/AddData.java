@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,13 +21,16 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.Statement;
 
-public class AddData extends AppCompatActivity implements View.OnClickListener {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
-    Button btnBack;
-    Button btnAdd;
-    TextView txtSurname;
-    TextView txtName;
-    TextView txtAge;
+public class AddData extends AppCompatActivity implements View.OnClickListener {
+    TextView txtProduct;
+    TextView txtQuantity;
+    TextView txtCost;
     ImageView imageView;
     String Image;
     Connection connection;
@@ -36,37 +40,37 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_data);
 
-        btnBack = findViewById(R.id.btnBack);
+        Button btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener((view -> {
             Intent intent = new Intent(AddData.this, MainActivity.class);
             startActivity(intent);
         }));
 
-        btnAdd = findViewById(R.id.btnAdd);
+        Button btnAdd = findViewById(R.id.btnAdd);
         btnAdd.setOnClickListener(this);
 
-        txtSurname = findViewById(R.id.Surname);
-        txtSurname.setOnFocusChangeListener((v, hasFocus) -> {
+        txtProduct = findViewById(R.id.Product);
+        txtProduct.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus)
-                txtSurname.setHint(null);
+                txtProduct.setHint(null);
             else
-                txtSurname.setHint(R.string.product);
+                txtProduct.setHint(R.string.product);
         });
 
-        txtName = findViewById(R.id.Name);
-        txtName.setOnFocusChangeListener((v, hasFocus) -> {
+        txtQuantity = findViewById(R.id.Quantity);
+        txtQuantity.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus)
-                txtName.setHint(null);
+                txtQuantity.setHint(null);
             else
-                txtName.setHint(R.string.quantity);
+                txtQuantity.setHint(R.string.quantity);
         });
 
-        txtAge = findViewById(R.id.Age);
-        txtAge.setOnFocusChangeListener((v, hasFocus) -> {
+        txtCost = findViewById(R.id.Cost);
+        txtCost.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus)
-                txtAge.setHint(null);
+                txtCost.setHint(null);
             else
-                txtAge.setHint(R.string.cost);
+                txtCost.setHint(R.string.cost);
         });
 
         imageView = findViewById(R.id.imageView);
@@ -98,11 +102,12 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        String Surname = txtSurname.getText().toString();
-        String Name = txtName.getText().toString();
-        String Age = txtAge.getText().toString();
+        String Product = txtProduct.getText().toString();
+        String Quantity = txtQuantity.getText().toString();
+        String Cost = txtCost.getText().toString();
 
-        switch (v.getId()) {
+        postData(Product, Quantity, Cost, Image);
+        /*switch (v.getId()) {
 
             case R.id.btnAdd:
                 try {
@@ -110,8 +115,8 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
                     connection = dbHelper.connectionClass();
 
                     if (connection != null) {
-                        String query = "INSERT INTO Employees VALUES('" + Surname + "', '" + Name +
-                                "', " + Age + ", '" + Image + "')";
+                        String query = "INSERT INTO Employees VALUES('" + Product + "', '" + Quantity +
+                                "', " + Cost + ", '" + Image + "')";
                         Statement statement = connection.createStatement();
                         statement.executeUpdate(query);
 
@@ -131,6 +136,44 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
                 } catch (Exception ex) {
                     Toast.makeText(this, "Возникла ошибка!", Toast.LENGTH_LONG).show();
                 }
-        }
+        }*/
+    }
+
+    private void postData(String product, String quantity, String cost, String image) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://ngknn.ru:5101/NGKNN/СергеевДЕ/api/Shops") // Бросает в catch
+                // Конвертер JSON
+                .addConverterFactory(GsonConverterFactory.create())
+                // Строим конструктор
+                .build();
+
+        RetrofitAPI retrofitAPI = retrofit.create(RetrofitAPI.class);
+
+        DataModal modal = new DataModal(product, Integer.parseInt(quantity),
+                Integer.parseInt(cost), image);
+
+        // Вызов сообщения и передача модального класса
+        Call<DataModal> call = retrofitAPI.createPost(modal);
+
+        //Выполнение метода
+        call.enqueue(new Callback<DataModal>() {
+            @Override
+            public void onResponse(Call<DataModal> call, Response<DataModal> response) {
+                // Когда получен ответ от API
+                Toast.makeText(AddData.this, "Data added to API", Toast.LENGTH_LONG).show();
+
+                txtProduct.setText("");
+                txtQuantity.setText("");
+                txtCost.setText("");
+
+                DataModal responseFromAPI = response.body();
+            }
+
+            @Override
+            public void onFailure(Call<DataModal> call, Throwable t) {
+                Toast.makeText(AddData.this, "Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }
