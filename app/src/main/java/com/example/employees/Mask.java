@@ -1,9 +1,6 @@
 package com.example.employees;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
-public class Mask implements Parcelable {
+public class Mask {
 
     private int Id;
     private String Product;
@@ -11,25 +8,20 @@ public class Mask implements Parcelable {
     private int Cost;
     private String Image;
 
-    protected Mask(Parcel in) {
-        Id = in.readInt();
-        Product = in.readString();
-        Quantity = in.readInt();
-        Cost = in.readInt();
-        Image = in.readString();
+    public Mask(int Id, String product, int quantity, int cost, String image) {
+        this.Id = Id;
+        Product = product;
+        Quantity = quantity;
+        Cost = cost;
+        Image = image;
     }
 
-    public static final Creator<Mask> CREATOR = new Creator<Mask>() {
-        @Override
-        public Mask createFromParcel(Parcel in) {
-            return new Mask(in);
-        }
-
-        @Override
-        public Mask[] newArray(int size) {
-            return new Mask[size];
-        }
-    };
+    public Mask(String product, int quantity, int cost, String image) {
+        Product = product;
+        Quantity = quantity;
+        Cost = cost;
+        Image = image;
+    }
 
     public void setId(int Id) {
         this.Id = Id;
@@ -69,27 +61,5 @@ public class Mask implements Parcelable {
 
     public String getImage() {
         return Image;
-    }
-
-    public Mask(int Id, String product, int quantity, int cost, String image) {
-        this.Id = Id;
-        Product = product;
-        Quantity = quantity;
-        Cost = cost;
-        Image = image;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(Id);
-        dest.writeString(Product);
-        dest.writeInt(Quantity);
-        dest.writeInt(Cost);
-        dest.writeString(Image);
     }
 }

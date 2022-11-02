@@ -3,12 +3,13 @@ package com.example.employees;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 
 public interface RetrofitAPI {
 
-    // Передаём параметр как пользватели
     @POST("users")
+    Call<Mask> createPost(@Body Mask mask);
 
-    //Метод для публикации данных
-    Call<DataModal> createPost(@Body DataModal dataModal);
+    @PUT("api/users/2")
+    Call<Mask> updateData(@Body Mask mask);
 }

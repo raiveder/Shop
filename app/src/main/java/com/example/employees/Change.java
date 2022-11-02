@@ -27,18 +27,25 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Base64;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class Change extends AppCompatActivity implements View.OnClickListener {
 
     Button btnBack;
     Button btnSafe;
     Button btnDel;
     Button btnDelImage;
-    TextView txtSurname;
-    TextView txtName;
-    TextView txtAge;
-    Connection connection;
+    TextView txtProduct;
+    TextView txtQuantity;
+    TextView txtCost;
     ImageView imageView;
     String Image;
+    int Id;
+    Bundle arg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,28 +67,28 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
         btnDelImage = findViewById(R.id.btnDelImage);
         btnDelImage.setOnClickListener(this);
 
-        txtSurname = findViewById(R.id.Surname);
-        txtSurname.setOnFocusChangeListener((v, hasFocus) -> {
+        txtProduct = findViewById(R.id.Product);
+        txtProduct.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus)
-                txtSurname.setHint(null);
+                txtProduct.setHint(null);
             else
-                txtSurname.setHint(R.string.product);
+                txtProduct.setHint(R.string.product);
         });
 
-        txtName = findViewById(R.id.Name);
-        txtName.setOnFocusChangeListener((v, hasFocus) -> {
+        txtQuantity = findViewById(R.id.Quantity);
+        txtQuantity.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus)
-                txtName.setHint(null);
+                txtQuantity.setHint(null);
             else
-                txtName.setHint(R.string.quantity);
+                txtQuantity.setHint(R.string.quantity);
         });
 
-        txtAge = findViewById(R.id.Age);
-        txtAge.setOnFocusChangeListener((v, hasFocus) -> {
+        txtCost = findViewById(R.id.Cost);
+        txtCost.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus)
-                txtAge.setHint(null);
+                txtCost.setHint(null);
             else
-                txtAge.setHint(R.string.cost);
+                txtCost.setHint(R.string.cost);
         });
 
         imageView = findViewById(R.id.imageView);
@@ -91,7 +98,52 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
             pickImg.launch(intent);
         });
 
-        setText();
+        setData();
+    }
+
+    private void setData()
+    {
+        arg = getIntent().getExtras();
+        Id = arg.getInt("Id");
+        txtProduct.setText(arg.getString("Product"));
+        txtQuantity.setText(String.valueOf(arg.getInt("Quantity")));
+        txtCost.setText(String.valueOf(arg.getInt("Cost")));
+        imageView.setImageBitmap(getImgBitmap(arg.getString("Image")));
+    }
+
+    private void putData(int id, String product, String quantity, String cost, String image) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://ngknn.ru:5101/NGKNN/СергеевДЕ/api/Shops/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        RetrofitAPI retrofitAPI = retrofit.create(RetrofitAPI.class);
+
+        Mask mask = new Mask(id, product, Integer.parseInt(quantity),
+                Integer.parseInt(cost), image);
+
+        Call<Mask> call = retrofitAPI.updateData(mask);
+
+        call.enqueue(new Callback<Mask>() {
+            @Override
+            public void onResponse(Call<Mask> call, Response<Mask> response) {
+                Toast.makeText(Change.this, "Товар успешно изменён", Toast.LENGTH_SHORT).show();
+
+                txtProduct.setText("");
+                txtQuantity.setText("");
+                txtCost.setText("");
+
+                txtProduct.clearFocus();
+                txtQuantity.clearFocus();
+                txtCost.clearFocus();
+            }
+
+            @Override
+            public void onFailure(Call<Mask> call, Throwable t) {
+                Toast.makeText(Change.this, "Ошибка: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     public final ActivityResultLauncher<Intent> pickImg = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -101,46 +153,6 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
                 try {
                     InputStream is = getContentResolver().openInputStream(uri);
                     Bitmap bitmap = BitmapFactory.decodeStream(is);
-
-                    //Код для переворота изображения, если оно горизонтальное, проверить не смог,
-                    //не помогает, но пишут, что рабочий.
-                    //Не работает, потому что exif всегда null
-
-                    /*String[] filePathColumn = {MediaStore.Images.Media.DATA};
-                    Cursor cursor = getContentResolver().query(uri, filePathColumn, null, null, null);
-                    cursor.moveToFirst();
-
-                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                    String picturePath = cursor.getString(columnIndex);
-                    cursor.close();
-
-                    ExifInterface exif = null;
-                    try {
-                        File pictureFile = new File(picturePath);
-                        exif = new ExifInterface(pictureFile.getAbsolutePath());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    int orientation = ExifInterface.ORIENTATION_NORMAL;
-
-                    if (exif != null)
-                        orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-
-                    switch (orientation) {
-                        case ExifInterface.ORIENTATION_ROTATE_90:
-                            bitmap = rotateBitmap(bitmap, 90);
-                            break;
-                        case ExifInterface.ORIENTATION_ROTATE_180:
-                            bitmap = rotateBitmap(bitmap, 180);
-                            break;
-
-                        case ExifInterface.ORIENTATION_ROTATE_270:
-                            bitmap = rotateBitmap(bitmap, 270);
-                            break;
-                    }*/
-
-
                     imageView.setImageBitmap(bitmap);
                     Image = MainActivity.encodeImage(bitmap);
                 } catch (Exception e) {
@@ -150,39 +162,6 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
         }
     });
 
-    private static Bitmap rotateBitmap(Bitmap bitmap, int degrees) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(degrees);
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-    }
-
-    private void setText() {
-        try {
-            ConnectionHelper dbHelper = new ConnectionHelper();
-            connection = dbHelper.connectionClass();
-
-            if (connection != null) {
-                String query = "Select * FROM Employees WHERE Id = " + MainActivity.id;
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(query);
-
-                String img = "null";
-                while (resultSet.next()) {
-                    txtSurname.setText(resultSet.getString(2));
-                    txtName.setText(resultSet.getString(3));
-                    txtAge.setText(resultSet.getString(4));
-                    img = resultSet.getString(5);
-                }
-                imageView.setImageBitmap(getImgBitmap(img));
-
-            } else {
-                Toast.makeText(this, "Проверьте подключение!", Toast.LENGTH_LONG).show();
-            }
-        } catch (Exception ex) {
-            Toast.makeText(this, "Возникла ошибка!", Toast.LENGTH_LONG).show();
-        }
-    }
-
     private Bitmap getImgBitmap(String encodedImg) {
         if (!encodedImg.equals("null")) {
             byte[] bytes = new byte[0];
@@ -191,6 +170,7 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
             }
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         }
+
         return BitmapFactory.decodeResource(Change.this.getResources(),
                 R.drawable.stub);
     }
@@ -201,51 +181,21 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
 
         switch (v.getId()) {
             case R.id.btnSafe:
-                String Surname = txtSurname.getText().toString();
-                String Name = txtName.getText().toString();
-                String Age = txtAge.getText().toString();
+                String Product = txtProduct.getText().toString();
+                String Quantity = txtQuantity.getText().toString();
+                String Cost = txtCost.getText().toString();
 
-                String query = "UPDATE Employees SET Surname = '" + Surname +
-                        "', Firstname ='" + Name + "', Age = " + Age + ", Image = '" + Image +
-                        "' WHERE Id = " + MainActivity.id;
-                updateQuery(query, "Данные успешно изменены");
+                putData(Id, Product, Quantity, Cost, Image);
                 break;
 
             case R.id.btnDel:
-                query = "DELETE FROM Employees WHERE Id = " + MainActivity.id;
-                updateQuery(query, "Сотрудник успешно удалён");
-
-                Intent intent = new Intent(Change.this, MainActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(Change.this, MainActivity.class));
                 break;
 
             case R.id.btnDelImage:
                 Image = "null";
                 imageView.setImageBitmap(getImgBitmap(Image));
                 break;
-        }
-    }
-
-    private void updateQuery(String query, String yesMessage) {
-
-        try {
-            ConnectionHelper dbHelper = new ConnectionHelper();
-            connection = dbHelper.connectionClass();
-
-            if (connection != null) {
-                Statement statement = connection.createStatement();
-                statement.executeUpdate(query);
-
-                txtSurname.clearFocus();
-                txtName.clearFocus();
-                txtAge.clearFocus();
-
-                Toast.makeText(this, yesMessage, Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(this, "Проверьте подключение!", Toast.LENGTH_LONG).show();
-            }
-        } catch (Exception ex) {
-            Toast.makeText(this, "Возникла ошибка!", Toast.LENGTH_LONG).show();
         }
     }
 }

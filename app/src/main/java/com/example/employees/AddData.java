@@ -13,13 +13,10 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.Statement;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -33,7 +30,6 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
     TextView txtCost;
     ImageView imageView;
     String Image;
-    Connection connection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,9 +84,6 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
                 try {
                     InputStream is = getContentResolver().openInputStream(uri);
                     Bitmap bitmap = BitmapFactory.decodeStream(is);
-
-                    //Здесь должен быть код для переворота изображения, но он не работает (в Change)
-
                     imageView.setImageBitmap(bitmap);
                     Image = MainActivity.encodeImage(bitmap);
                 } catch (Exception e) {
@@ -106,73 +99,44 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
         String Quantity = txtQuantity.getText().toString();
         String Cost = txtCost.getText().toString();
 
-        postData(Product, Quantity, Cost, Image);
-        /*switch (v.getId()) {
+        switch (v.getId()) {
 
             case R.id.btnAdd:
-                try {
-                    ConnectionHelper dbHelper = new ConnectionHelper();
-                    connection = dbHelper.connectionClass();
-
-                    if (connection != null) {
-                        String query = "INSERT INTO Employees VALUES('" + Product + "', '" + Quantity +
-                                "', " + Cost + ", '" + Image + "')";
-                        Statement statement = connection.createStatement();
-                        statement.executeUpdate(query);
-
-                        txtSurname.setText(null);
-                        txtName.setText(null);
-                        txtAge.setText(null);
-
-                        txtSurname.clearFocus();
-                        txtName.clearFocus();
-                        txtAge.clearFocus();
-
-                        Toast.makeText(this, "Сотрудник успешно добавлен", Toast.LENGTH_LONG).show();
-                        break;
-                    } else {
-                        Toast.makeText(this, "Проверьте подключение!", Toast.LENGTH_LONG).show();
-                    }
-                } catch (Exception ex) {
-                    Toast.makeText(this, "Возникла ошибка!", Toast.LENGTH_LONG).show();
-                }
-        }*/
+                postData(Product, Quantity, Cost, Image);
+        }
     }
 
     private void postData(String product, String quantity, String cost, String image) {
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://ngknn.ru:5101/NGKNN/СергеевДЕ/api/Shops") // Бросает в catch
-                // Конвертер JSON
+                .baseUrl("https://ngknn.ru:5101/NGKNN/СергеевДЕ/api/Shops/")
                 .addConverterFactory(GsonConverterFactory.create())
-                // Строим конструктор
                 .build();
 
         RetrofitAPI retrofitAPI = retrofit.create(RetrofitAPI.class);
 
-        DataModal modal = new DataModal(product, Integer.parseInt(quantity),
+        Mask mask = new Mask(product, Integer.parseInt(quantity),
                 Integer.parseInt(cost), image);
 
-        // Вызов сообщения и передача модального класса
-        Call<DataModal> call = retrofitAPI.createPost(modal);
+        Call<Mask> call = retrofitAPI.createPost(mask);
 
-        //Выполнение метода
-        call.enqueue(new Callback<DataModal>() {
+        call.enqueue(new Callback<Mask>() {
             @Override
-            public void onResponse(Call<DataModal> call, Response<DataModal> response) {
-                // Когда получен ответ от API
-                Toast.makeText(AddData.this, "Data added to API", Toast.LENGTH_LONG).show();
+            public void onResponse(Call<Mask> call, Response<Mask> response) {
+                Toast.makeText(AddData.this, "Товар успешно добавлен", Toast.LENGTH_LONG).show();
 
                 txtProduct.setText("");
                 txtQuantity.setText("");
                 txtCost.setText("");
 
-                DataModal responseFromAPI = response.body();
+                txtProduct.clearFocus();
+                txtQuantity.clearFocus();
+                txtCost.clearFocus();
             }
 
             @Override
-            public void onFailure(Call<DataModal> call, Throwable t) {
-                Toast.makeText(AddData.this, "Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            public void onFailure(Call<Mask> call, Throwable t) {
+                Toast.makeText(AddData.this, "Ошибка: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

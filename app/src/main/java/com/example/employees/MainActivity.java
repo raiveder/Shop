@@ -3,7 +3,6 @@ package com.example.employees;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -12,7 +11,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,17 +26,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    static String id;
+    static int id;
     Spinner spinner;
     EditText findByProduct;
     ListView listView;
@@ -51,10 +45,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Button btnAdd = findViewById(R.id.btnAdd);
-        btnAdd.setOnClickListener((view -> {
-            Intent intent = new Intent(MainActivity.this, AddData.class);
-            startActivity(intent);
-        }));
+        btnAdd.setOnClickListener((view -> startActivity(new Intent(
+                MainActivity.this, AddData.class))));
 
         findByProduct = findViewById(R.id.FindProduct);
         findByProduct.addTextChangedListener(new TextWatcher() {
@@ -90,21 +82,15 @@ public class MainActivity extends AppCompatActivity {
         pAdapter = new AdapterMask(MainActivity.this, lvProducts);
         listView.setAdapter(pAdapter);
         listView.setOnItemClickListener((arg0, arg1, position, arg3) -> {
-            try {
-                id = String.valueOf(arg3);
-                ConnectionHelper dbHelper = new ConnectionHelper();
-                Connection connection = dbHelper.connectionClass();
-                if (connection != null) {
-                    Intent intent = new Intent(MainActivity.this, Change.class);
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(MainActivity.this, "Проверьте подключение!",
-                            Toast.LENGTH_LONG).show();
-                }
-            } catch (Exception ex) {
-                Toast.makeText(MainActivity.this, "Возникла ошибка!",
-                        Toast.LENGTH_LONG).show();
-            }
+
+            Intent intent = new Intent(MainActivity.this, Change.class);
+            intent.putExtra("Id", Integer.parseInt(String.valueOf(arg3)));
+            // Посмотреть со сбитыми id
+            intent.putExtra("Product", lvProducts.get(position).getProduct());
+            intent.putExtra("Quantity", lvProducts.get(position).getQuantity());
+            intent.putExtra("Cost", lvProducts.get(position).getCost());
+            intent.putExtra("Image", lvProducts.get(position).getImage());
+            startActivity(intent);
         });
         new GetProducts().execute();
 
