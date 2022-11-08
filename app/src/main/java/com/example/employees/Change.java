@@ -45,7 +45,6 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
     ImageView imageView;
     String Image;
     int Id;
-    Bundle arg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,18 +102,19 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
 
     private void setData()
     {
-        arg = getIntent().getExtras();
+        Bundle arg = getIntent().getExtras();
         Id = arg.getInt("Id");
         txtProduct.setText(arg.getString("Product"));
         txtQuantity.setText(String.valueOf(arg.getInt("Quantity")));
         txtCost.setText(String.valueOf(arg.getInt("Cost")));
-        imageView.setImageBitmap(getImgBitmap(arg.getString("Image")));
+        Image = arg.getString("Image");
+        imageView.setImageBitmap(getImgBitmap(Image));
     }
 
     private void putData(int id, String product, String quantity, String cost, String image) {
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://ngknn.ru:5101/NGKNN/СергеевДЕ/api/Shops/")
+                .baseUrl("https://ngknn.ru:5001/NGKNN/СергеевДЕ/api/Shops/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

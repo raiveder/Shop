@@ -109,7 +109,7 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
     private void postData(String product, String quantity, String cost, String image) {
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://ngknn.ru:5101/NGKNN/СергеевДЕ/api/Shops/")
+                .baseUrl("https://ngknn.ru:5001/NGKNN/СергеевДЕ/api/Shops/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
