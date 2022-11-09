@@ -28,11 +28,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity {
 
-    static int id;
     Spinner spinner;
     EditText findByProduct;
     ListView listView;
@@ -52,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
         findByProduct.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable editable) {
-                sort(spinner.getSelectedItemPosition());
             }
 
             @Override
@@ -61,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                sort(spinner.getSelectedItemPosition());
             }
         });
 
@@ -82,65 +85,64 @@ public class MainActivity extends AppCompatActivity {
         pAdapter = new AdapterMask(MainActivity.this, lvProducts);
         listView.setAdapter(pAdapter);
         listView.setOnItemClickListener((arg0, arg1, position, arg3) -> {
-
             Intent intent = new Intent(MainActivity.this, Change.class);
             intent.putExtra("Id", Integer.parseInt(String.valueOf(arg3)));
-            // Посмотреть со сбитыми id
             intent.putExtra("Product", lvProducts.get(position).getProduct());
             intent.putExtra("Quantity", lvProducts.get(position).getQuantity());
             intent.putExtra("Cost", lvProducts.get(position).getCost());
             intent.putExtra("Image", lvProducts.get(position).getImage());
             startActivity(intent);
         });
+
         new GetProducts().execute();
 
+        try {
+            TimeUnit.MILLISECONDS.sleep(200); // Без этого запускается пустой
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void sort(int position) {
-        String query = "Select * FROM Shop WHERE Product LIKE '" +
-                findByProduct.getText() + "%'";
+
+        List<Mask> list = new ArrayList<>();
+        if (findByProduct.getText().equals(null)) {
+            list.addAll(lvProducts);
+        } else {
+            for (Mask item : lvProducts) {
+                if (item.getProduct().contains(findByProduct.getText())) {
+                    list.add(item);
+                }
+            }
+        }
 
         switch (position) {
-            case 0:
-                getData(query);
-                break;
 
             case 1:
-                getData(query + " ORDER BY Product ASC");
+                SortByProduct sp = new SortByProduct();
+                Collections.sort(list, sp);
                 break;
 
             case 2:
-                getData(query + " ORDER BY Quantity ASC");
+                SortByQuantity sq = new SortByQuantity();
+                Collections.sort(list, sq);
                 break;
 
             case 3:
-                getData(query + " ORDER BY Cost ASC");
+                SortByCost sc = new SortByCost();
+                Collections.sort(list, sc);
                 break;
         }
-    }
 
-    public void getData(String query) {
-
-    }
-
-    public static String encodeImage(Bitmap bitmap) {
-        int prevW = 500;
-        int prevH = bitmap.getHeight() * prevW / bitmap.getWidth();
-
-        Bitmap b = Bitmap.createScaledBitmap(bitmap, prevW, prevH, false);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        b.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
-        byte[] bytes = byteArrayOutputStream.toByteArray();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return Base64.getEncoder().encodeToString(bytes);
-        }
-        return "";
+        pAdapter = new AdapterMask(MainActivity.this, list);
+        listView.setAdapter(pAdapter);
     }
 
     private class GetProducts extends AsyncTask<Void, Void, String> {
 
         @Override
         protected String doInBackground(Void... voids) {
+
             try {
                 URL url = new URL("https://ngknn.ru:5001/NGKNN/СергеевДЕ/api/Shops");
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -161,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String s) {
+
             super.onPostExecute(s);
             try {
                 JSONArray tempArray = new JSONArray(s);

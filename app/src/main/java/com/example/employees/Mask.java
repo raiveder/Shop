@@ -4,8 +4,8 @@ public class Mask {
 
     private int Id;
     private String Product;
-    private int Quantity;
-    private int Cost;
+    private Integer Quantity;
+    private Integer Cost;
     private String Image;
 
     public Mask(int Id, String product, int quantity, int cost, String image) {
@@ -31,11 +31,11 @@ public class Mask {
         Product = product;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(Integer quantity) {
         Quantity = quantity;
     }
 
-    public void setCost(int cost) {
+    public void setCost(Integer cost) {
         Cost = cost;
     }
 
@@ -51,11 +51,11 @@ public class Mask {
         return Product;
     }
 
-    public int getQuantity() {
+    public Integer getQuantity() {
         return Quantity;
     }
 
-    public int getCost() {
+    public Integer getCost() {
         return Cost;
     }
 

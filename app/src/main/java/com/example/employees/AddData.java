@@ -85,7 +85,7 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
                     InputStream is = getContentResolver().openInputStream(uri);
                     Bitmap bitmap = BitmapFactory.decodeStream(is);
                     imageView.setImageBitmap(bitmap);
-                    Image = MainActivity.encodeImage(bitmap);
+                    Image = Images.encodeImage(bitmap);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -109,7 +109,7 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
     private void postData(String product, String quantity, String cost, String image) {
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://ngknn.ru:5001/NGKNN/СергеевДЕ/api/Shops/")
+                .baseUrl("https://ngknn.ru:5001/NGKNN/СергеевДЕ/api/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
