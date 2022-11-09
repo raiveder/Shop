@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Сотрудники</string>
+    <string name="app_name">Shop</string>
     <string name="addData">Добавить запись</string>
     <string name="product">Продукт</string>
     <string name="quantity">Кол-во</string>
@@ -13,7 +13,7 @@
     <string name="sort">Сортировка:</string>
     <string-array name="spinnerItems">
         <item>нет</item>
-        <item>по наименованию</item>
+        <item>по наим.</item>
         <item>по количеству</item>
         <item>по цене</item>
     </string-array>

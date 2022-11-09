@@ -37,74 +37,36 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
         setContentView(R.layout.activity_add_data);
 
         Button btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener((view -> {
-            Intent intent = new Intent(AddData.this, MainActivity.class);
-            startActivity(intent);
-        }));
-
         Button btnAdd = findViewById(R.id.btnAdd);
+
+        btnBack.setOnClickListener(this);
         btnAdd.setOnClickListener(this);
 
         txtProduct = findViewById(R.id.Product);
-        txtProduct.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus)
-                txtProduct.setHint(null);
-            else
-                txtProduct.setHint(R.string.product);
-        });
-
         txtQuantity = findViewById(R.id.Quantity);
-        txtQuantity.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus)
-                txtQuantity.setHint(null);
-            else
-                txtQuantity.setHint(R.string.quantity);
-        });
-
         txtCost = findViewById(R.id.Cost);
-        txtCost.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus)
-                txtCost.setHint(null);
-            else
-                txtCost.setHint(R.string.cost);
-        });
+        Other.setDynamicHint(txtProduct, txtQuantity, txtCost);
 
         imageView = findViewById(R.id.imageView);
-        imageView.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            pickImg.launch(intent);
-        });
+        imageView.setOnClickListener(this);
     }
 
-    private final ActivityResultLauncher<Intent> pickImg = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        if (result.getResultCode() == RESULT_OK) {
-            if (result.getData() != null) {
-                Uri uri = result.getData().getData();
-                try {
-                    InputStream is = getContentResolver().openInputStream(uri);
-                    Bitmap bitmap = BitmapFactory.decodeStream(is);
-                    imageView.setImageBitmap(bitmap);
-                    Image = Images.encodeImage(bitmap);
-                } catch (Exception e) {
-                    e.printStackTrace();
+    private final ActivityResultLauncher<Intent> pickImg = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    if (result.getData() != null) {
+                        Uri uri = result.getData().getData();
+                        try {
+                            InputStream is = getContentResolver().openInputStream(uri);
+                            Bitmap bitmap = BitmapFactory.decodeStream(is);
+                            imageView.setImageBitmap(bitmap);
+                            Image = Images.encodeImage(bitmap);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-            }
-        }
-    });
-
-    @Override
-    public void onClick(View v) {
-        String Product = txtProduct.getText().toString();
-        String Quantity = txtQuantity.getText().toString();
-        String Cost = txtCost.getText().toString();
-
-        switch (v.getId()) {
-
-            case R.id.btnAdd:
-                postData(Product, Quantity, Cost, Image);
-        }
-    }
+            });
 
     private void postData(String product, String quantity, String cost, String image) {
 
@@ -115,15 +77,19 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
 
         RetrofitAPI retrofitAPI = retrofit.create(RetrofitAPI.class);
 
-        Mask mask = new Mask(product, Integer.parseInt(quantity),
-                Integer.parseInt(cost), image);
+        Mask mask = new Mask(product, Integer.parseInt(quantity), Integer.parseInt(cost), image);
 
         Call<Mask> call = retrofitAPI.createPost(mask);
 
         call.enqueue(new Callback<Mask>() {
+
             @Override
             public void onResponse(Call<Mask> call, Response<Mask> response) {
-                Toast.makeText(AddData.this, "Товар успешно добавлен", Toast.LENGTH_LONG).show();
+                Toast.makeText(AddData.this, "Товар успешно добавлен",
+                        Toast.LENGTH_LONG).show();
+
+                Image = "null";
+                imageView.setImageResource(R.drawable.stub);
 
                 txtProduct.setText("");
                 txtQuantity.setText("");
@@ -136,8 +102,35 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
 
             @Override
             public void onFailure(Call<Mask> call, Throwable t) {
-                Toast.makeText(AddData.this, "Ошибка: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(AddData.this, "Ошибка: " + t.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        String Product = txtProduct.getText().toString();
+        String Quantity = txtQuantity.getText().toString();
+        String Cost = txtCost.getText().toString();
+
+        switch (v.getId()) {
+
+            case R.id.btnBack:
+                startActivity(new Intent(AddData.this, MainActivity.class));
+                break;
+
+            case R.id.btnAdd:
+                postData(Product, Quantity, Cost, Image);
+                break;
+
+            case R.id.imageView:
+                Intent intent = new Intent(Intent.ACTION_PICK,
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                pickImg.launch(intent);
+                break;
+        }
     }
 }

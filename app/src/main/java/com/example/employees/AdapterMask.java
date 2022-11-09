@@ -1,9 +1,6 @@
 package com.example.employees;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Base64;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -37,13 +34,9 @@ public class AdapterMask extends BaseAdapter {
         return maskList.get(i).getId();
     }
 
-    private Bitmap getUserImage(String encodedImg) {
-        byte[] bytes = Base64.decode(encodedImg, Base64.DEFAULT);
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-    }
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+
         View v = View.inflate(mContext, R.layout.item_mask, null);
 
         TextView Product = v.findViewById(R.id.Product);
@@ -55,9 +48,7 @@ public class AdapterMask extends BaseAdapter {
         Product.setText(mask.getProduct());
         Quantity.setText(Integer.toString(mask.getQuantity()));
         Cost.setText(Integer.toString(mask.getCost()));
-        if (!mask.getImage().equals("null")) {
-            Image.setImageBitmap(getUserImage(mask.getImage()));
-        }
+        Image.setImageBitmap(Images.getImgBitmap(mContext, mask.getImage()));
 
         return v;
     }

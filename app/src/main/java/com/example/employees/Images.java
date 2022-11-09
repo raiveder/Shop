@@ -1,6 +1,6 @@
 package com.example.employees;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
@@ -24,7 +24,7 @@ public class Images {
         return "";
     }
 
-    /*private static Bitmap getImgBitmap(String encodedImg) {
+    public static Bitmap getImgBitmap(Context context, String encodedImg) {
         if (!encodedImg.equals("null")) {
             byte[] bytes = new byte[0];
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -33,6 +33,6 @@ public class Images {
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         }
 
-        return BitmapFactory.decodeResource(android.content.res.Resources, R.drawable.stub);
-    }*/
+        return BitmapFactory.decodeResource(context.getResources(), R.drawable.stub);
+    }
 }

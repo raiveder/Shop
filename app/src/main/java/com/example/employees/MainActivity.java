@@ -4,9 +4,7 @@ package com.example.employees;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -16,22 +14,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -70,7 +64,9 @@ public class MainActivity extends AppCompatActivity {
         spinner = findViewById(R.id.spinner);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView,
+                                       int position, long id) {
+
                 sort(position);
             }
 
@@ -80,9 +76,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        listView = findViewById(R.id.lvData);
         lvProducts = new ArrayList<>();
         pAdapter = new AdapterMask(MainActivity.this, lvProducts);
+
+        listView = findViewById(R.id.lvData);
         listView.setAdapter(pAdapter);
         listView.setOnItemClickListener((arg0, arg1, position, arg3) -> {
             Intent intent = new Intent(MainActivity.this, Change.class);
@@ -97,15 +94,20 @@ public class MainActivity extends AppCompatActivity {
         new GetProducts().execute();
 
         try {
-            TimeUnit.MILLISECONDS.sleep(200); // Без этого запускается пустой
+            TimeUnit.MILLISECONDS.sleep(700);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        // Без этого запускается пустой ListView
+        // Если без задержки пройтись точкой останова по onCreate() то всё нормально
+        // Если без неё, то в каком-то моменте он либо не успевает заполниться
+        // Либо в sort() инициализируется пустым (догадки)
     }
 
     private void sort(int position) {
 
         List<Mask> list = new ArrayList<>();
+
         if (findByProduct.getText().equals(null)) {
             list.addAll(lvProducts);
         } else {
@@ -119,18 +121,15 @@ public class MainActivity extends AppCompatActivity {
         switch (position) {
 
             case 1:
-                SortByProduct sp = new SortByProduct();
-                Collections.sort(list, sp);
+                Collections.sort(list, new SortByProduct());
                 break;
 
             case 2:
-                SortByQuantity sq = new SortByQuantity();
-                Collections.sort(list, sq);
+                Collections.sort(list, new SortByQuantity());
                 break;
 
             case 3:
-                SortByCost sc = new SortByCost();
-                Collections.sort(list, sc);
+                Collections.sort(list, new SortByCost());
                 break;
         }
 
@@ -180,8 +179,8 @@ public class MainActivity extends AppCompatActivity {
                     lvProducts.add(tempProduct);
                     pAdapter.notifyDataSetInvalidated();
                 }
-            } catch (Exception ignored) {
-
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
     }

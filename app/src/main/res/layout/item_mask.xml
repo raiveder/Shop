@@ -17,8 +17,7 @@
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:textAlignment="center"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/stub" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/Product"
