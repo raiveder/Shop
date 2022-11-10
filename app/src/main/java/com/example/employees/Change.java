@@ -4,6 +4,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,12 +13,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -33,11 +37,15 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
     ImageView imageView;
     String Image;
     int Id;
+    ProgressBar PBWait;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+
+        PBWait = findViewById(R.id.pbWait);
 
         Button btnBack = findViewById(R.id.btnBack);
         Button btnSave = findViewById(R.id.btnSave);
@@ -75,6 +83,8 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
 
     private void putData(int id, String product, String quantity, String cost, String image) {
 
+        PBWait.setVisibility(View.VISIBLE);
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://ngknn.ru:5001/NGKNN/СергеевДЕ/api/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -91,19 +101,11 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
 
             @Override
             public void onResponse(Call<Mask> call, Response<Mask> response) {
+
                 Toast.makeText(Change.this, "Товар успешно изменён",
                         Toast.LENGTH_SHORT).show();
 
-                Image = "null";
-                imageView.setImageResource(R.drawable.stub);
-
-                txtProduct.setText("");
-                txtQuantity.setText("");
-                txtCost.setText("");
-
-                txtProduct.clearFocus();
-                txtQuantity.clearFocus();
-                txtCost.clearFocus();
+                PBWait.setVisibility(View.GONE);
             }
 
             @Override
@@ -112,9 +114,12 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
                         Toast.LENGTH_LONG).show();
             }
         });
+
     }
 
     private void deleteData(int id) {
+
+        PBWait.setVisibility(View.VISIBLE);
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://ngknn.ru:5001/NGKNN/СергеевДЕ/api/")
@@ -131,6 +136,8 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
             public void onResponse(Call<Mask> call, Response<Mask> response) {
                 Toast.makeText(Change.this, "Товар успешно удалён",
                         Toast.LENGTH_SHORT).show();
+
+                PBWait.setVisibility(View.GONE);
             }
 
             @Override
@@ -139,6 +146,7 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
                         Toast.LENGTH_LONG).show();
             }
         });
+
     }
 
     public final ActivityResultLauncher<Intent> pickImg = registerForActivityResult(
@@ -168,21 +176,21 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
                 break;
 
             case R.id.btnSave:
+
                 String Product = txtProduct.getText().toString();
                 String Quantity = txtQuantity.getText().toString();
                 String Cost = txtCost.getText().toString();
 
                 putData(Id, Product, Quantity, Cost, Image);
-
                 new Handler().postDelayed(() -> startActivity(
-                        new Intent(Change.this, MainActivity.class)), 200);
+                        new Intent(Change.this, MainActivity.class)), 1000);
                 break;
 
             case R.id.btnDel:
                 deleteData(Id);
 
                 new Handler().postDelayed(() -> startActivity(
-                        new Intent(Change.this, MainActivity.class)), 200);
+                        new Intent(Change.this, MainActivity.class)), 1000);
                 break;
 
             case R.id.btnDelImage:

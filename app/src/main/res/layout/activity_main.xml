@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/papayaWhip"
     tools:context=".MainActivity">
 
     <LinearLayout
         android:id="@+id/lineFunc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@id/lineFunc"
         app:layout_constraintEnd_toEndOf="parent"
@@ -44,9 +44,9 @@
         android:id="@+id/lineHeader"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="30dp"
         android:layout_marginTop="20dp"
-        app:layout_constraintBottom_toTopOf="@id/lvData"
+        android:layout_marginBottom="30dp"
+        app:layout_constraintBottom_toTopOf="@id/rlData"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/lineFunc">
@@ -87,28 +87,44 @@
             android:textSize="18dp" />
     </LinearLayout>
 
-    <ListView
-        android:id="@+id/lvData"
+    <RelativeLayout
+        android:id="@+id/rlData"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@id/btnAdd"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lineHeader"
-        tools:ignore="UsingOnClickInXml" />
+        app:layout_constraintTop_toBottomOf="@id/lineHeader">
+
+        <ListView
+            android:id="@+id/lvData"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            android:padding="2dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:ignore="UsingOnClickInXml" />
+
+        <ProgressBar
+            android:id="@+id/pbWait"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:visibility="gone" />
+    </RelativeLayout>
 
     <android.widget.Button
         android:id="@+id/btnAdd"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="100dp"
         android:layout_marginTop="30dp"
         android:layout_marginBottom="30dp"
-        android:layout_marginHorizontal="100dp"
         android:background="@drawable/buttonbackground"
         android:text="@string/addData"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lvData" />
+        app:layout_constraintTop_toBottomOf="@id/rlData" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

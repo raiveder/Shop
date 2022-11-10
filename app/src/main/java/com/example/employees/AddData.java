@@ -4,15 +4,19 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,9 +42,11 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
 
         Button btnBack = findViewById(R.id.btnBack);
         Button btnAdd = findViewById(R.id.btnAdd);
+        Button btnDelImage = findViewById(R.id.btnDelImage);
 
         btnBack.setOnClickListener(this);
         btnAdd.setOnClickListener(this);
+        btnDelImage.setOnClickListener(this);
 
         txtProduct = findViewById(R.id.Product);
         txtQuantity = findViewById(R.id.Quantity);
@@ -68,7 +74,21 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
                 }
             });
 
+    private void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) AddData.this.getSystemService(Activity.INPUT_METHOD_SERVICE);
+
+        View view = AddData.this.getCurrentFocus();
+
+        if (view == null) {
+            view = new View(AddData.this);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
     private void postData(String product, String quantity, String cost, String image) {
+
+        ProgressBar PBWait = findViewById(R.id.pbWait);
+        PBWait.setVisibility(View.VISIBLE);
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://ngknn.ru:5001/NGKNN/СергеевДЕ/api/")
@@ -98,12 +118,15 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
                 txtProduct.clearFocus();
                 txtQuantity.clearFocus();
                 txtCost.clearFocus();
+
+                PBWait.setVisibility(View.GONE);
             }
 
             @Override
             public void onFailure(Call<Mask> call, Throwable t) {
                 Toast.makeText(AddData.this, "Ошибка: " + t.getMessage(),
                         Toast.LENGTH_LONG).show();
+
             }
         });
     }
@@ -122,7 +145,14 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
                 break;
 
             case R.id.btnAdd:
+                hideKeyboard();
+
                 postData(Product, Quantity, Cost, Image);
+                break;
+
+            case R.id.btnDelImage:
+                Image = "null";
+                imageView.setImageResource(R.drawable.stub);
                 break;
 
             case R.id.imageView:

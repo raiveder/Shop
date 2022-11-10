@@ -6,13 +6,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 
 import org.json.JSONArray;
@@ -25,7 +28,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,15 +36,19 @@ public class MainActivity extends AppCompatActivity {
     ListView listView;
     List<Mask> lvProducts;
     AdapterMask pAdapter;
+    ProgressBar pbWait;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
         Button btnAdd = findViewById(R.id.btnAdd);
         btnAdd.setOnClickListener((view -> startActivity(new Intent(
                 MainActivity.this, AddData.class))));
+
+        pbWait = findViewById(R.id.pbWait);
 
         findByProduct = findViewById(R.id.FindProduct);
         findByProduct.addTextChangedListener(new TextWatcher() {
@@ -66,8 +72,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView,
                                        int position, long id) {
+                List<Mask> list = new ArrayList<>();
+                pAdapter = new AdapterMask(MainActivity.this, list);
+                listView.setAdapter(pAdapter);
 
-                sort(position);
+                pbWait.setVisibility(View.VISIBLE);
+
+                new Handler().postDelayed(() ->
+                        sort(position), 1000);
             }
 
             @Override
@@ -92,16 +104,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         new GetProducts().execute();
-
-        try {
-            TimeUnit.MILLISECONDS.sleep(700);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        // Без этого запускается пустой ListView
-        // Если без задержки пройтись точкой останова по onCreate() то всё нормально
-        // Если без неё, то в каком-то моменте он либо не успевает заполниться
-        // Либо в sort() инициализируется пустым (догадки)
     }
 
     private void sort(int position) {
@@ -111,8 +113,11 @@ public class MainActivity extends AppCompatActivity {
         if (findByProduct.getText().equals(null)) {
             list.addAll(lvProducts);
         } else {
+            String text = findByProduct.getText().toString();
+
             for (Mask item : lvProducts) {
-                if (item.getProduct().contains(findByProduct.getText())) {
+                if(item.getProduct().substring(0, text.length()).equalsIgnoreCase(text))
+                {
                     list.add(item);
                 }
             }
@@ -133,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
+        pbWait.setVisibility(View.GONE);
         pAdapter = new AdapterMask(MainActivity.this, list);
         listView.setAdapter(pAdapter);
     }
