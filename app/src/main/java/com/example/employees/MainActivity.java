@@ -6,11 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,13 +40,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
         Button btnAdd = findViewById(R.id.btnAdd);
         btnAdd.setOnClickListener((view -> startActivity(new Intent(
                 MainActivity.this, AddData.class))));
-
-        pbWait = findViewById(R.id.pbWait);
 
         findByProduct = findViewById(R.id.FindProduct);
         findByProduct.addTextChangedListener(new TextWatcher() {
@@ -72,14 +67,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView,
                                        int position, long id) {
-                List<Mask> list = new ArrayList<>();
-                pAdapter = new AdapterMask(MainActivity.this, list);
-                listView.setAdapter(pAdapter);
 
-                pbWait.setVisibility(View.VISIBLE);
-
-                new Handler().postDelayed(() ->
-                        sort(position), 1000);
+                sort(position);
             }
 
             @Override
@@ -89,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         lvProducts = new ArrayList<>();
-        pAdapter = new AdapterMask(MainActivity.this, lvProducts);
 
         listView = findViewById(R.id.lvData);
         listView.setAdapter(pAdapter);
@@ -103,10 +91,17 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        pbWait = findViewById(R.id.pbWait);
+        pbWait.setVisibility(View.VISIBLE);
+
         new GetProducts().execute();
     }
 
     private void sort(int position) {
+
+        if (lvProducts.size() == 0) {
+            return;
+        }
 
         List<Mask> list = new ArrayList<>();
 
@@ -116,8 +111,7 @@ public class MainActivity extends AppCompatActivity {
             String text = findByProduct.getText().toString();
 
             for (Mask item : lvProducts) {
-                if(item.getProduct().substring(0, text.length()).equalsIgnoreCase(text))
-                {
+                if (item.getProduct().substring(0, text.length()).equalsIgnoreCase(text)) {
                     list.add(item);
                 }
             }
@@ -138,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
-        pbWait.setVisibility(View.GONE);
         pAdapter = new AdapterMask(MainActivity.this, list);
         listView.setAdapter(pAdapter);
     }
@@ -170,7 +163,10 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
 
             super.onPostExecute(s);
+
             try {
+                pAdapter = new AdapterMask(MainActivity.this, lvProducts);
+
                 JSONArray tempArray = new JSONArray(s);
                 for (int i = 0; i < tempArray.length(); i++) {
 
@@ -185,6 +181,9 @@ public class MainActivity extends AppCompatActivity {
                     lvProducts.add(tempProduct);
                     pAdapter.notifyDataSetInvalidated();
                 }
+
+                pbWait.setVisibility(View.GONE);
+                listView.setAdapter(pAdapter);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

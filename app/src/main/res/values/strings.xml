@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Shop</string>
     <string name="addData">Добавить запись</string>
-    <string name="product">Продукт</string>
+    <string name="product">Товар</string>
     <string name="quantity">Кол-во</string>
     <string name="cost">Цена</string>
     <string name="photo">Фото</string>

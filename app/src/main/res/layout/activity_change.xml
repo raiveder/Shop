@@ -36,6 +36,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="@string/product"
+        android:inputType="text"
         app:layout_constraintBottom_toTopOf="@id/Quantity"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

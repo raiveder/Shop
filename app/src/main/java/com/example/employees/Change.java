@@ -4,7 +4,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -21,7 +20,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.InputStream;
-import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -36,8 +34,8 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
     TextView txtCost;
     ImageView imageView;
     String Image;
-    int Id;
     ProgressBar PBWait;
+    int Id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,6 +178,10 @@ public class Change extends AppCompatActivity implements View.OnClickListener {
                 String Product = txtProduct.getText().toString();
                 String Quantity = txtQuantity.getText().toString();
                 String Cost = txtCost.getText().toString();
+
+                if (Other.checkData(Change.this, Product, Quantity, Cost)) {
+                    return;
+                }
 
                 putData(Id, Product, Quantity, Cost, Image);
                 new Handler().postDelayed(() -> startActivity(

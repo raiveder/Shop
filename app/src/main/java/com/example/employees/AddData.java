@@ -10,7 +10,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -74,17 +73,6 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
                 }
             });
 
-    private void hideKeyboard() {
-        InputMethodManager imm = (InputMethodManager) AddData.this.getSystemService(Activity.INPUT_METHOD_SERVICE);
-
-        View view = AddData.this.getCurrentFocus();
-
-        if (view == null) {
-            view = new View(AddData.this);
-        }
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-    }
-
     private void postData(String product, String quantity, String cost, String image) {
 
         ProgressBar PBWait = findViewById(R.id.pbWait);
@@ -134,10 +122,6 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
 
-        String Product = txtProduct.getText().toString();
-        String Quantity = txtQuantity.getText().toString();
-        String Cost = txtCost.getText().toString();
-
         switch (v.getId()) {
 
             case R.id.btnBack:
@@ -145,7 +129,15 @@ public class AddData extends AppCompatActivity implements View.OnClickListener {
                 break;
 
             case R.id.btnAdd:
-                hideKeyboard();
+                String Product = txtProduct.getText().toString();
+                String Quantity = txtQuantity.getText().toString();
+                String Cost = txtCost.getText().toString();
+
+                if (Other.checkData(AddData.this, Product, Quantity, Cost)) {
+                    return;
+                }
+
+                Other.hideKeyboard(AddData.this);
 
                 postData(Product, Quantity, Cost, Image);
                 break;
